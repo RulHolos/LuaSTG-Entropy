@@ -1,0 +1,14 @@
+<Solution>
+  <Configurations>
+    <BuildType Name="Debug" />
+    <BuildType Name="Debug-Linux" />
+    <BuildType Name="Release" />
+    <BuildType Name="Release-Linux" />
+  </Configurations>
+  <Folder Name="/Éléments de solution/" />
+  <Project Path="D:/Programmation/LuaSTG-Entropy/luajit_sharp/luajit_sharp.csproj" Id="421c47ea-5070-4d87-a4fc-521c01b9e276" />
+  <Project Path="D:/Programmation/LuaSTG-Entropy/LuaSTG-Entropy/LuaSTG-Entropy.csproj" />
+  <Project Path="D:/Programmation/LuaSTG-Entropy/LuaSTG.Generators/LuaSTG.Generators.csproj" Id="89427e06-609c-4840-ac91-edc6c2d96509" />
+  <Project Path="LuaSTG.Core/LuaSTG.Core.csproj" Id="d232a7e0-d843-4e8b-abfb-c2295167c529" />
+  <Project Path="LuaSTG.TestProject/LuaSTG.TestProject.csproj" Id="5fe9031e-77c9-486a-bb3f-6449cd748291" />
+</Solution>

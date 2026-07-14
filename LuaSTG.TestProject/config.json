@@ -1,0 +1,86 @@
+﻿{
+  "include": [
+    {
+      "path": "userdata/config.launch.json",
+      "optional": true
+    },
+    {
+      "path": "userdata/config.user.json",
+      "optional": true
+    },
+    {
+      "path": "userdata/config.editor.json",
+      "optional": true
+    }
+  ],
+  "application": {
+    "uuid": "f9bb5f27-1ebe-44f1-9dc1-8e2af63e97ee",
+    "single_instance": false
+  },
+  "debug": {
+    "track_window_focus": false
+  },
+  "logging": {
+    "debugger": {
+      "enable": true,
+      "threshold": "debug"
+    },
+    "console": {
+      "enable": true,
+      "threshold": "verbose",
+      "preserve": true
+    },
+    "file": {
+      "enable": true,
+      "threshold": "info",
+      "path": "engine.log"
+    },
+    "rolling_file": {
+      "enable": true,
+      "threshold": "info",
+      "path": "userdata/logs/",
+      "max_history": 10
+    }
+  },
+  "file_system": {
+    "resources": [
+      {
+        "name": "thlib-resources",
+        "type": "directory",
+        "path": "packages/thlib-resources/"
+      },
+      {
+        "name": "thlib-scripts",
+        "type": "directory",
+        "path": "packages/thlib-scripts/"
+      },
+      {
+        "name": "thlib-scripts-v2",
+        "type": "directory",
+        "path": "packages/thlib-scripts-v2/"
+      },
+      {
+        "name": "zinolib-scripts",
+        "type": "directory",
+        "path": "packages/zinolib-scripts/"
+      }
+    ],
+    "user": "userdata/"
+  },
+  "timing": {
+    "frame_rate": 60
+  },
+  "window": {
+    "title": "",
+    "cursor_visible": true,
+    "allow_window_corner": true
+  },
+  "audio_system": {
+    "preferred_endpoint_name": "",
+    "sound_effect_volume": 0.3,
+    "music_volume": 0.4
+  },
+  "graphics_system": {
+    "use_vulkan_backend": false
+  }
+}
