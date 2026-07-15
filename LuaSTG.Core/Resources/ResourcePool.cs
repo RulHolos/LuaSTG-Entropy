@@ -32,6 +32,8 @@ public sealed class ResourcePool : IDisposable
 {
     public string poolName { get; private set; } = string.Empty;
 
+    private Dictionary<string, TextureResource> TexturePool = [];
+    private Dictionary<string, ImageResource> SpritePool = [];
     private Dictionary<string, AudioResource> MusicPool = [];
     private Dictionary<string, AudioResource> SoundPool = [];
 
@@ -46,6 +48,8 @@ public sealed class ResourcePool : IDisposable
     {
         //TODO: Clear unmanaged resources
 
+        TexturePool.Clear();
+        SpritePool.Clear();
         MusicPool.Clear();
         SoundPool.Clear();
 
@@ -62,16 +66,20 @@ public sealed class ResourcePool : IDisposable
         switch (type)
         {
             case ResourceType.Texture:
-                if (MusicPool.TryGetValue(name, out var tex))
+                if (TexturePool.TryGetValue(name, out var tex))
                     return tex;
                 break;
             case ResourceType.Sprite:
-                if (MusicPool.TryGetValue(name, out var img))
+                if (SpritePool.TryGetValue(name, out var img))
                     return img;
                 break;
             case ResourceType.Music:
                 if (MusicPool.TryGetValue(name, out var bgm))
                     return bgm;
+                break;
+            case ResourceType.SoundEffect:
+                if (SoundPool.TryGetValue(name, out var snd))
+                    return snd;
                 break;
             default:
                 return default;
