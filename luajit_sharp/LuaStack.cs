@@ -43,6 +43,11 @@ public unsafe readonly partial struct LuaStack
 
     public StackIndex IndexOfTop() => lua_gettop(L);
 
+    public StackIndex AbsIndex(StackIndex index) =>
+        index.Value < 0 && index.Value > LUA_REGISTRYINDEX
+            ? lua_gettop(L) + index.Value + 1
+            : index.Value;
+
     public void PopValue(int count = 1) => lua_settop(L, -count - 1);
 
     public void Push(bool value) => lua_pushboolean(L, value);
@@ -70,6 +75,8 @@ public unsafe readonly partial struct LuaStack
     public void Push(StackIndex value) => lua_pushvalue(L, value.Value);
 
     public void PushCFunction(lua_CFunction fn) => lua_pushcclosure(L, fn, 0);
+
+    public void PushNil() => lua_pushnil(L);
 
     public void Push<T>(T value)
     {

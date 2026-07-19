@@ -11,10 +11,16 @@ public unsafe struct luaL_Reg
     public byte* name;
     public lua_CFunction func;
 
-    public luaL_Reg(string name, lua_CFunction func)
+    public luaL_Reg(string? name, lua_CFunction func)
     {
         this.name = (byte*)Marshal.StringToHGlobalAnsi(name);
         this.func = func;
+    }
+
+    public luaL_Reg()
+    {
+        this.name = (byte*)Marshal.StringToHGlobalAnsi(null);
+        this.func = null;
     }
 }
 

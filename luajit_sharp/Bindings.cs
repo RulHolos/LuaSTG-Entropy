@@ -6,6 +6,7 @@ using unsafe lua_Alloc = delegate* unmanaged[Cdecl]<void*, void*, nuint, nuint, 
 using System.Runtime.InteropServices;
 using System.Text;
 using System.Runtime.CompilerServices;
+using luajit_sharp.cjson;
 
 namespace luajit_sharp;
 
@@ -298,7 +299,8 @@ public unsafe static partial class LuaNative
     public static partial int lua_error(LuaState L);
 
     [LibraryImport(Lib)]
-    public static partial int lua_next(LuaState L, int idx);
+    [return: MarshalAs(UnmanagedType.Bool)]
+    public static partial bool lua_next(LuaState L, int idx);
 
     [LibraryImport(Lib)]
     public static partial void lua_concat(LuaState L, int n);
@@ -407,7 +409,7 @@ public unsafe static partial class LuaNative
 
     [LibraryImport(Lib, EntryPoint = "luaL_optlstring")]
     public static partial byte* _luaL_optlstring(LuaState L, int numArg, byte* def, nuint* l);
-    public static string luaL_optstring(LuaState L, int numArg, string def)
+    public static string luaL_optstring(LuaState L, int numArg, string? def)
     {
         nuint len;
 
@@ -471,6 +473,9 @@ public unsafe static partial class LuaNative
 
     public static int luaL_notimplemented(LuaState L, [CallerMemberName] string func = "")
         => luaL_error(L, $"function '{func}' is not implemented.");
+
+    public static void lua_open_cjson(LuaState L)
+        => CJsonModule.Register(L);
 
     #endregion
 }
