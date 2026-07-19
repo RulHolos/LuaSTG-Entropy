@@ -1,4 +1,5 @@
 ﻿using LuaSTG.Core.Rendering;
+using LuaSTG.Core.Window;
 using Silk.NET.OpenGL;
 using System;
 using System.IO;
@@ -28,7 +29,7 @@ public sealed class TextureResource : IResource, IDisposable
 
     public static TextureResource FromPixels(ReadOnlySpan<byte> rgba, int width, int height, bool pixelated = true)
     {
-        return FromPixels(RenderEngine.Instance.GL, rgba, width, height, pixelated);
+        return FromPixels(WindowDevice.Instance.RenderEngine.GL, rgba, width, height, pixelated);
     }
 
     public static unsafe TextureResource FromPixels(GL gl, ReadOnlySpan<byte> rgba, int width, int height, bool pixelated = true, bool mipmaps = false)
@@ -69,7 +70,7 @@ public sealed class TextureResource : IResource, IDisposable
     public static TextureResource FromMemory(byte[] encodedData, bool pixelated = true, bool mipmaps = false)
     {
         var image = StbImageSharp.ImageResult.FromMemory(encodedData, StbImageSharp.ColorComponents.RedGreenBlueAlpha);
-        return FromPixels(RenderEngine.Instance.GL, image.Data, image.Width, image.Height, pixelated, mipmaps);
+        return FromPixels(WindowDevice.Instance.RenderEngine.GL, image.Data, image.Width, image.Height, pixelated, mipmaps);
     }
 
     public void Bind(uint unit = 0)

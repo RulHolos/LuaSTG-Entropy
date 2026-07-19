@@ -6,7 +6,7 @@ using System.Collections.Generic;
 using System.Runtime.InteropServices;
 using System.Text;
 
-namespace LuaSTG.Core;
+namespace LuaSTG.Core.Window;
 
 public sealed unsafe class AudioDevice : IDisposable
 {

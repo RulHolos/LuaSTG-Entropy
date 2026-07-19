@@ -1,5 +1,6 @@
 ﻿using LuaSTG.Core.Configuration;
 using LuaSTG.Core.Debugger;
+using LuaSTG.Core.Window;
 using Silk.NET.OpenGL;
 using Silk.NET.Windowing;
 using System;
@@ -11,7 +12,7 @@ namespace LuaSTG.Core.Rendering;
 
 public sealed class RenderEngine : IDisposable
 {
-    public WindowDevice Device { get; set; }
+    public WindowDevice Owner { get; set; }
     private GL _gl;
     public GL GL => _gl;
     private bool isRunning = false;
@@ -23,26 +24,24 @@ public sealed class RenderEngine : IDisposable
     private int frameCount = 0;
     private double fpsAccumulator = 0.0;
 
-    public static RenderEngine Instance { get; set; } = new();
-
     public SpriteRenderer SpriteRenderer;
 
     public event Action? OnFrame;
     public event Action? OnRender;
 
-    private bool requestExit = false;
+    internal bool RequestExit = false;
 
-    private RenderEngine()
+    public RenderEngine(WindowDevice device)
     {
-        Device = new();
+        Owner = device;
+        Initialize();
     }
 
     public void Initialize()
     {
-        Device.Initialize();
-        _gl = GL.GetApi(Device.Window);
+        _gl = GL.GetApi(Owner.Window);
 
-        SpriteRenderer = new(_gl, Device.Window.Size.X, Device.Window.Size.Y);
+        SpriteRenderer = new(_gl, Owner.Window.Size.X, Owner.Window.Size.Y);
 
         isRunning = true;
     }
@@ -53,7 +52,7 @@ public sealed class RenderEngine : IDisposable
         double previousTime = stopwatch.Elapsed.TotalSeconds;
         double accumulator = 0.0;
 
-        while (isRunning && !Device.Window.IsClosing)
+        while (isRunning && !Owner.Window.IsClosing)
         {
             double currentTime = stopwatch.Elapsed.TotalSeconds;
             double elapsedTime = currentTime - previousTime;
@@ -67,7 +66,7 @@ public sealed class RenderEngine : IDisposable
 
             while (accumulator >= TargetTime)
             {
-                Device.Window.DoEvents();
+                Owner.Window.DoEvents();
 
                 //Framing
                 Frame();
@@ -75,7 +74,7 @@ public sealed class RenderEngine : IDisposable
                 //Rendering
                 Render();
 
-                Device.Window.SwapBuffers();
+                Owner.Window.SwapBuffers();
 
                 accumulator -= TargetTime;
 
@@ -98,7 +97,7 @@ public sealed class RenderEngine : IDisposable
             else if (timeLeft > 0.0005)
                 Thread.Sleep(0);
 
-            if (requestExit)
+            if (RequestExit)
             {
                 isRunning = false;
                 break;
@@ -119,13 +118,6 @@ public sealed class RenderEngine : IDisposable
     public void Dispose()
     {
         _gl?.Dispose();
-        Device.Window?.Close();
-        Device.Window?.Dispose();
-    }
-
-    public void RequestExit()
-    {
-        requestExit = true;
     }
 
     public double GetCurrentFPS()

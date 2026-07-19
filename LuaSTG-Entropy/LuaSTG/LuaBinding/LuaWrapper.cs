@@ -34,11 +34,14 @@ public static class LuaWrapper
         LW_Audio.Register(L);
         LW_Renderer.Register(L);
         LW_FileManager.Register(L);
+        LW_Input.Register(L);
+        LW_Archive.Register(L);
         lua_settop(L, 0);
 
         //Modern
         Vector2.Register(L);
         Vector3.Register(L);
+        Well512.Register(L);
     }
 
     public static void EnsureLSTGInStack(LuaState L)
@@ -50,6 +53,20 @@ public static class LuaWrapper
             lua_pop(L, 1);
             return;
         }
+    }
+
+    public static unsafe void RegisterMethodD(LuaState L, string name, luaL_Reg* methods, luaL_Reg* metamethods)
+    {
+        luaL_register(L, name, methods);
+        luaL_newmetatable(L, name);
+        luaL_register(L, metamethods);
+        lua_pushstring(L, "__index");
+        lua_pushvalue(L, -3);
+        lua_rawset(L, -3);
+        lua_pushstring(L, "__metatable");
+        lua_pushvalue(L, -3);
+        lua_rawset(L, -3);
+        lua_pop(L, 2);
     }
 
     public static unsafe void RegisterClassIntoTable2(LuaState L, string name, luaL_Reg* methods, string metaname, luaL_Reg* metamethods)

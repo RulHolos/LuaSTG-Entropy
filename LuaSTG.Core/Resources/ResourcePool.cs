@@ -2,6 +2,7 @@
 using LuaSTG.Core.FileSystem;
 using LuaSTG.Core.Rendering;
 using LuaSTG.Core.Resources.Impl;
+using LuaSTG.Core.Window;
 using System;
 using System.Collections.Generic;
 using System.Text;
@@ -109,7 +110,7 @@ public sealed class ResourcePool : IDisposable
         try
         {
             var res = new MusicResource(name, path, data!, start, end, once_decode);
-            RenderEngine.Instance.Device.AudioDevice.RegisterResource(res);
+            WindowDevice.Instance.AudioDevice.RegisterResource(res);
             MusicPool.Add(name, res);
         }
         catch (Exception ex)

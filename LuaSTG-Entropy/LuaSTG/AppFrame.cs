@@ -6,9 +6,10 @@ using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Text;
-using LuaSTG.LuaSTG.GameObjects;
 using LuaSTG.Core.Rendering;
 using LuaSTG.Core.Resources;
+using LuaSTG.Core.GameObjects;
+using LuaSTG.Core.Window;
 
 namespace LuaSTG.LuaSTG;
 
@@ -28,6 +29,8 @@ public partial class AppFrame
     public AppStatus Status { get; set; } = AppStatus.NotInitialized;
 
     public GameObjectPool? ObjectPool;
+
+    public WindowDevice WindowDevice { get; private set; }
 
     public bool Init()
     {
@@ -50,16 +53,16 @@ public partial class AppFrame
                     FileSystemManager.AddSearchPath(resource.Path!);
                     break;
                 case ConfigurationLoader.ResourceType.Archive:
-                    if (FileSystemArchive.TryCreateFromFile(resource.Path!, out IFileSystem arc))
-                        FileSystemManager.AddFileSystem(resource.Name!, arc);
+                    if (FileSystemArchive.TryCreateFromFile(resource.Path!, out var arc))
+                        FileSystemManager.AddFileSystem(resource.Name!, arc!);
                     break;
             }
         }
 
         //////////////////////////////////////// Allocate space for object pools
 
-        Logger.luastg.Information($"Initializing object pool with capacity: {GameObjectPool.LOBJPOOL_SIZE}");
-        ObjectPool = GameObjectPool.Instance;
+        Logger.luastg.Information($"Initializing object pool with capacity: {GameObjectPool.Capacity}");
+        ObjectPool = new();
 
         //////////////////////////////////////// Initialize async resource loader
 
@@ -79,35 +82,10 @@ public partial class AppFrame
         //////////////////////////////////////// Initialize Engine
 
         //TODO: Create window, audio engine, input, ...
-        RenderEngine.Instance.Initialize();
-        RenderEngine.Instance.OnFrame += () =>
-        {
-            if (!SafeCallGlobalFunction("FrameFunc", 1))
-            {
-                Logger.luastg.Information("GameFrame returned false, exiting loop");
-                RenderEngine.Instance.RequestExit();
-            }
-        };
-        RenderEngine.Instance.OnRender += () =>
-        {
-            bool result = SafeCallGlobalFunction("RenderFunc");
-            if (!result)
-                RenderEngine.Instance.RequestExit();
-        };
+        WindowDevice = new();
+        WindowDevice.Initialize();
 
-        RenderEngine.Instance.Device.Window.FocusChanged += (focus) =>
-        {
-            if (focus)
-            {
-                if (!SafeCallGlobalFunction("FocusGainFunc"))
-                    RenderEngine.Instance.RequestExit();
-            }
-            else
-            {
-                if (!SafeCallGlobalFunction("FocusLoseFunc"))
-                    RenderEngine.Instance.RequestExit();
-            }
-        };
+        SetupWindowEvents();
 
         if (!OnLoadMainScriptAndFiles())
             return false;
@@ -128,14 +106,14 @@ public partial class AppFrame
         Debug.Assert(Status == AppStatus.Initialized);
         Logger.luastg.Information("Start Update & Render Loop");
 
-        RenderEngine.Instance.Run();
+        WindowDevice.Run();
 
         Logger.luastg.Information("Exiting Update & Render Loop");
     }
 
     public void Shutdown()
     {
-        RenderEngine.Instance.Dispose();
+        WindowDevice?.Dispose();
 
         if (!L.IsNull)
             SafeCallGlobalFunction("GameExit");
@@ -148,6 +126,40 @@ public partial class AppFrame
 
         Status = AppStatus.Destroyed;
         Logger.luastg.Information("Engine shutdown");
+
+        Console.ReadLine();
+    }
+
+    private void SetupWindowEvents()
+    {
+        WindowDevice?.RenderEngine?.OnFrame += () =>
+        {
+            if (!SafeCallGlobalFunction("FrameFunc", 1))
+            {
+                Logger.luastg.Information("GameFrame returned false, exiting loop");
+                WindowDevice?.RequestExit();
+            }
+        };
+        WindowDevice?.RenderEngine?.OnRender += () =>
+        {
+            bool result = SafeCallGlobalFunction("RenderFunc");
+            if (!result)
+                WindowDevice?.RequestExit();
+        };
+
+        WindowDevice?.Window.FocusChanged += (focus) =>
+        {
+            if (focus)
+            {
+                if (!SafeCallGlobalFunction("FocusGainFunc"))
+                    WindowDevice?.RequestExit();
+            }
+            else
+            {
+                if (!SafeCallGlobalFunction("FocusLoseFunc"))
+                    WindowDevice?.RequestExit();
+            }
+        };
     }
 
     #region Helpers

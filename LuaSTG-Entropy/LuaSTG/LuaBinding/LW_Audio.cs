@@ -31,7 +31,7 @@ public unsafe partial class LW_Audio : ILuaBinding
         MusicResource? music = (MusicResource?)ResourceManager.Instance.FindMusic(s);
         if (music == null)
             return luaL_error(L, $"music '{s}' not found.");
-        RenderEngine.Instance.Device.AudioDevice.PlayBgm(music);
+        Program.LAPP.WindowDevice.AudioDevice.PlayBgm(music);
         return 0;
     }
 
@@ -42,8 +42,8 @@ public unsafe partial class LW_Audio : ILuaBinding
         {
             float x = (float)luaL_checknumber(L, 1);
             x = Math.Clamp(x, 0f, 1f);
-            RenderEngine.Instance.Device.AudioDevice.SetBgmTrackVolume(x);
-            RenderEngine.Instance.Device.AudioDevice.BgmChannelVolume = x;
+            Program.LAPP.WindowDevice.AudioDevice.SetBgmTrackVolume(x);
+            Program.LAPP.WindowDevice.AudioDevice.BgmChannelVolume = x;
         }
         else
         {

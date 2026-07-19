@@ -1,4 +1,5 @@
 ﻿using LuaSTG.Core.Resources.Impl;
+using LuaSTG.Core.Window;
 using Silk.NET.Maths;
 using Silk.NET.OpenGL;
 using System;
@@ -86,7 +87,7 @@ public sealed class SpriteRenderer : IDisposable
         _gl.Enable(EnableCap.Blend);
         _gl.BlendFunc(BlendingFactor.SrcAlpha, BlendingFactor.OneMinusSrcAlpha);
 
-        RenderEngine.Instance.Device.Window.Resize += Resize;
+        WindowDevice.Instance?.Window.Resize += Resize;
     }
 
     public void Resize(Vector2D<int> vec) => Resize(vec.X, vec.Y);
@@ -130,7 +131,7 @@ public sealed class SpriteRenderer : IDisposable
 
     public void Dispose()
     {
-        RenderEngine.Instance.Device.Window.Resize -= Resize;
+        WindowDevice.Instance?.Window.Resize -= Resize;
         _gl.DeleteBuffer(vbo);
         _gl.DeleteVertexArray(vao);
         defaultShader.Dispose();

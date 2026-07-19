@@ -1,20 +1,29 @@
 ﻿using LuaSTG.Core.Configuration;
+using LuaSTG.Core.Rendering;
 using Silk.NET.Windowing;
 
-namespace LuaSTG.Core.Rendering;
+namespace LuaSTG.Core.Window;
 
-public sealed class WindowDevice
+public sealed class WindowDevice : IDisposable
 {
     private WindowOptions options;
-    public IWindow Window { get; private set; }
+    public IWindow Window { get => field; private set { field = value; } }
+
+    public static WindowDevice Instance { get; private set; }
+
+    #region Subsystems
+
     public AudioDevice AudioDevice { get; private set; }
+    public InputDevice InputDevice { get; private set; }
+    public RenderEngine RenderEngine { get; private set; }
+
+    #endregion
 
     public WindowDevice()
     {
+        Instance = this;
+
         var cfgloader = ConfigurationLoader.Instance;
-        //Bypass vulkan for now.
-        /*var useVulkan = cfgloader.GraphicsSystem.UseVulkanBackend;
-        options = useVulkan ? WindowOptions.DefaultVulkan : WindowOptions.Default;*/
 
         options = WindowOptions.Default;
 
@@ -33,11 +42,29 @@ public sealed class WindowDevice
         Window.Initialize();
 
         AudioDevice = new();
-        Window.Closing += () => AudioDevice.Shutdown();
+        InputDevice = new(Window);
+        RenderEngine = new(this);
 
-        //if (ConfigurationLoader.Instance.GraphicsSystem.UseVulkanBackend && Window.VkSurface is null)
-        //    throw new NotSupportedException("Vulkan is not supported on the current platform.");
+        Window.Closing += Dispose;
 
         return true;
+    }
+
+    public void Run()
+    {
+        RenderEngine?.Run();
+    }
+
+    public void Dispose()
+    {
+        AudioDevice?.Dispose();
+        //InputDevice?.Dispose();
+        RenderEngine?.Dispose();
+        Window?.Dispose();
+    }
+
+    public void RequestExit()
+    {
+        RenderEngine?.RequestExit = true;
     }
 }

@@ -193,6 +193,7 @@ public partial class AppFrame
             Logger.luajit.Information("Registering standard libraries and built-in packages");
             {
                 luaL_openlibs(L);
+                lua_open_cjson(L);
                 LuaRegisterCustomLoader(L);
             }
             lua_settop(L, 0);

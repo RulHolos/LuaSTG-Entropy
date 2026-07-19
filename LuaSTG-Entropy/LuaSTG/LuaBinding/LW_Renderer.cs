@@ -31,7 +31,7 @@ public unsafe partial class LW_Renderer
         double vscale = luaL_optnumber(L, 6, hscale); //TODO: Multiply with GlobalImageScaleFactor
         double z = luaL_optnumber(L, 7, 0.5);
 
-        RenderEngine.Instance.SpriteRenderer.Draw(img, (float)x, (float)y, (float)rot, (float)hscale, (float)vscale);
+        Program.LAPP.WindowDevice.RenderEngine.SpriteRenderer.Draw(img, (float)x, (float)y, (float)rot, (float)hscale, (float)vscale);
         return 0;
     }
 
