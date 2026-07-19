@@ -70,14 +70,14 @@ public unsafe partial class LW_LuaSTG : ILuaBinding
     public static int SetFPS(LuaState L)
     {
         double fps = luaL_checkinteger(L, 1);
-        RenderEngine.Instance.SetFPS(fps);
+        Program.LAPP.WindowDevice.RenderEngine.SetFPS(fps);
         return 0;
     }
 
     [LuaBind]
     public static int GetFPS(LuaState L)
     {
-        lua_pushnumber(L, RenderEngine.Instance.GetCurrentFPS());
+        lua_pushnumber(L, Program.LAPP.WindowDevice.RenderEngine.GetCurrentFPS());
         return 1;
     }
 

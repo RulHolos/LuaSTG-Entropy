@@ -352,6 +352,7 @@ public unsafe partial class Vector3 : ILuaBinding
     public static void Register(LuaState L)
     {
         LuaWrapper.EnsureLSTGInStack(L);
+        Logger.luastg.Verbose($"Registering bindings: 'Vector3'");
 
         LuaStack ctx = new(L);
 

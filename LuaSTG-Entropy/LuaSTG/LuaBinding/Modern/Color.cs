@@ -1,6 +1,7 @@
 ﻿using luajit_sharp;
 using LuaSTG.Core.Attributes;
 using LuaSTG.Core.Debugger;
+using LuaSTG.Core.LuaBindings;
 using System;
 using System.Collections.Generic;
 using System.Runtime.CompilerServices;
@@ -8,41 +9,6 @@ using System.Runtime.InteropServices;
 using System.Text;
 
 namespace LuaSTG.LuaSTG.LuaBinding.Modern;
-
-[StructLayout(LayoutKind.Sequential)]
-public struct NativeColor : ILuaUserData
-{
-    public byte A;
-    public byte R;
-    public byte G;
-    public byte B;
-
-    public NativeColor(byte a, byte r, byte g, byte b)
-    {
-        A = a; R = r; G = g; B = b;
-    }
-
-    public uint Packed
-    {
-        readonly get => ((uint)A << 24) | ((uint)R << 16) | ((uint)G << 8) | B;
-        set
-        {
-            A = (byte)((value >> 24) & 0xFF);
-            R = (byte)((value >> 16) & 0xFF);
-            G = (byte)((value >> 8) & 0xFF);
-            B = (byte)(value & 0xFF);
-        }
-    }
-
-    public static string class_name => "lstg.Color";
-
-    public static bool operator ==(NativeColor left, NativeColor right) => left.Packed == right.Packed;
-    public static bool operator !=(NativeColor left, NativeColor right) => !(left == right);
-    public override readonly bool Equals(object? obj) => obj is NativeColor other && this == other;
-    public override readonly int GetHashCode() => (int)Packed;
-
-    public override readonly string ToString() => $"lstg.Color({A}, {R}, {G}, {B})";
-}
 
 public unsafe partial class Color : ILuaBinding, ILuaUserData
 {
@@ -269,6 +235,20 @@ public unsafe partial class Color : ILuaBinding, ILuaUserData
         return 1;
     }
 
+    [LuaBind]
+    public static int White(LuaState L)
+    {
+        CreateAndPush(L, new NativeColor(255, 255, 255, 255));
+        return 1;
+    }
+
+    [LuaBind]
+    public static int Black(LuaState L)
+    {
+        CreateAndPush(L, new NativeColor(255, 0, 0, 0));
+        return 1;
+    }
+
     #endregion
     #region Metamethods
 
@@ -460,12 +440,17 @@ public unsafe partial class Color : ILuaBinding, ILuaUserData
         new("Color", CFunctions.New),
         new("HSVColor", CFunctions.HSVColor),
 
+        //Entropy only
+        new("WhiteColor", CFunctions.White),
+        new("BlackColor", CFunctions.Black),
+
         new(null, null),
     ];
 
     public static void Register(LuaState L)
     {
         LuaWrapper.EnsureLSTGInStack(L);
+        Logger.luastg.Verbose($"Registering bindings: 'Color'");
 
         fixed (luaL_Reg* libPtr = lib)
             luaL_register(L, LuaWrapper.LUASTG_LUA_LIBNAME, libPtr);
