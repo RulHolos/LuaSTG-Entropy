@@ -23,7 +23,7 @@ public class FileSystemArchive : IFileSystem
         _archivePath = path.Replace('\\', '/');
     }
 
-    public static bool TryCreateFromFile(string path, out IFileSystem? archive)
+    public static bool TryCreateFromFile(string path, out FileSystemArchive? archive)
     {
         var instance = new FileSystemArchive(path);
         if (instance.Open())
@@ -137,7 +137,7 @@ public class FileSystemArchive : IFileSystem
         List<string> allPaths;
         lock (_archiveLock)
         {
-            allPaths = _files.Keys.Concat(_directories.Select(d => d + "/")).ToList();
+            allPaths = [.. _files.Keys, .. _directories.Select(d => d + "/")];
         }
 
         foreach (string path in allPaths)

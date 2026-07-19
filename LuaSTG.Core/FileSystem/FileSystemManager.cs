@@ -210,6 +210,9 @@ public static class FileSystemManager
     public static bool HasFile(string name) =>
         Resolve(ParseLocation(name)) is var res && res.FileSystem != null && res.FileSystem.HasFile(res.Path);
 
+    public static bool HasDirectory(string name) =>
+        Resolve(ParseLocation(name)) is var res && res.FileSystem != null && res.FileSystem.HasDirectory(res.Path);
+
     public static long GetFileSize(string name) =>
         Resolve(ParseLocation(name)) is var res && res.FileSystem != null
             ? res.FileSystem.GetFileSize(res.Path)
@@ -238,9 +241,6 @@ public static class FileSystemManager
         data = Encoding.UTF8.GetString(str);
         return ret;
     }
-
-    public static bool HasDirectory(string name) =>
-        Resolve(ParseLocation(name)) is var res && res.FileSystem != null && res.FileSystem.HasDirectory(res.Path);
 
     public static bool WriteFile(string name, ReadOnlySpan<byte> data)
     {
