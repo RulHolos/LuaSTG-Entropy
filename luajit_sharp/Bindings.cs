@@ -7,6 +7,7 @@ using System.Runtime.InteropServices;
 using System.Text;
 using System.Runtime.CompilerServices;
 using luajit_sharp.cjson;
+using luajit_sharp.FileSystemLite;
 
 namespace luajit_sharp;
 
@@ -474,8 +475,11 @@ public unsafe static partial class LuaNative
     public static int luaL_notimplemented(LuaState L, [CallerMemberName] string func = "")
         => luaL_error(L, $"function '{func}' is not implemented.");
 
-    public static void lua_open_cjson(LuaState L)
+    public static void luaopen_cjson(LuaState L)
         => CJsonModule.Register(L);
+
+    public static void luaopen_lfs(LuaState L)
+        => Lfs.Register(L);
 
     #endregion
 }
