@@ -28,7 +28,10 @@ public class ResourceManager
 
         //Reserved names
         if (name.Equals("global", StringComparison.OrdinalIgnoreCase) || name.Equals("stage", StringComparison.OrdinalIgnoreCase))
+        {
+            Logger.luastg.Warning($"Tried create Resource Pool of name '{name}', which is a reserved name.");
             return false;
+        }
 
         //Already exists, skip
         if (Pools.Any(x => x.poolName == name))
@@ -58,11 +61,11 @@ public class ResourceManager
     /// <typeparam name="T"></typeparam>
     /// <param name="name"></param>
     /// <returns></returns>
-    public IResource? FindResourceInAllPools(ResourceType type, string name)
+    public T? FindResourceInAllPools<T>(string name) where T : class, IResource
     {
         if (CurrentPool != null)
         {
-            var resource = CurrentPool.FindResource(type, name);
+            var resource = CurrentPool.FindResource<T>(name);
             if (resource != null)
                 return resource;
         }
@@ -78,7 +81,7 @@ public class ResourceManager
                 return;
             }
 
-            var resource = pool.FindResource(type, name);
+            var resource = pool.FindResource<T>(name);
             if (resource != null)
             {
                 lock (lockObject)
@@ -87,11 +90,6 @@ public class ResourceManager
             }
         });
 
-        return foundResource;
+        return foundResource as T;
     }
-
-    public TextureResource? FindTexture(string name) => (TextureResource?)FindResourceInAllPools(ResourceType.Texture, name);
-    public ImageResource? FindSprite(string name) => (ImageResource?)FindResourceInAllPools(ResourceType.Sprite, name);
-    public AudioResource? FindMusic(string name) => (AudioResource?)FindResourceInAllPools(ResourceType.Music, name);
-    public SoundEffectResource? FindSound(string name) => (SoundEffectResource?)FindResourceInAllPools(ResourceType.SoundEffect, name);
 }

@@ -1,5 +1,6 @@
 ﻿using LuaSTG.Core.Debugger;
 using LuaSTG.Core.Resources.Impl;
+using LuaSTG.Core.Window.Audio;
 using Miniaudio;
 using System;
 using System.Collections.Generic;
@@ -11,18 +12,25 @@ namespace LuaSTG.Core.Window;
 public sealed unsafe class AudioDevice : IDisposable
 {
     private const int SeVoiceCount = 32; //Sound Effect max overlap count
-    private const uint MA_SOUND_FLAG_DECODE = 0x00000002;
+    public const uint MA_SOUND_FLAG_DECODE = 0x00000002;
 
     private ma_engine* engine;
-    
+
+    public ma_engine* Engine => engine;
+    public ma_sound* BgmGroup => bgmGroup;
+
+    private ma_sound* masterGroup;
     private ma_sound* bgmGroup;
     private ma_sound* seGroup;
 
+    private float masterVolume = 1f;
     private float bgmChannelVolume = 1f;
     private float seChannelVolume = 1f;
 
     private ma_sound* bgmSound;
     private bool bgmSoundInitialized;
+
+    private readonly List<BgmChannel> bgmChannels = [];
 
     private ma_sound*[] seVoices;
     private bool[] seVoiceInitialized;
@@ -44,11 +52,14 @@ public sealed unsafe class AudioDevice : IDisposable
             return false;
         }
 
+        masterGroup = (ma_sound*)NativeMemory.Alloc((nuint)sizeof(ma_sound));
+        ma.sound_group_init(engine, 0, null, masterGroup);
+
         bgmGroup = (ma_sound*)NativeMemory.Alloc((nuint)sizeof(ma_sound));
-        ma.sound_group_init(engine, 0, null, bgmGroup);
+        ma.sound_group_init(engine, 0, masterGroup, bgmGroup);
 
         seGroup = (ma_sound*)NativeMemory.Alloc((nuint)sizeof(ma_sound));
-        ma.sound_group_init(engine, 0, null, seGroup);
+        ma.sound_group_init(engine, 0, masterGroup, seGroup);
 
         bgmSound = (ma_sound*)NativeMemory.Alloc((nuint)sizeof(ma_sound));
 
@@ -68,6 +79,9 @@ public sealed unsafe class AudioDevice : IDisposable
         if (!IsInitialized)
             return;
 
+        foreach (var channel in bgmChannels.ToArray())
+            channel.Dispose();
+
         if (bgmSoundInitialized)
             ma.sound_uninit(bgmSound);
         NativeMemory.Free(bgmSound);
@@ -85,6 +99,9 @@ public sealed unsafe class AudioDevice : IDisposable
         ma.sound_uninit(seGroup);
         NativeMemory.Free(seGroup);
 
+        ma.sound_uninit(masterGroup);
+        NativeMemory.Free(masterGroup);
+
         ma.engine_uninit(engine);
         NativeMemory.Free(engine);
 
@@ -93,7 +110,32 @@ public sealed unsafe class AudioDevice : IDisposable
 
     public void RegisterResource(AudioResource resource) => resource.Register(engine);
 
+    public void SetMasterVolume(float vol)
+    {
+        MasterVolume = vol;
+    }
+
+    public float MasterVolume
+    {
+        get => masterVolume;
+        set
+        {
+            masterVolume = Math.Clamp(value, 0f, 1f);
+            ma.sound_group_set_volume(masterGroup, masterVolume);
+        }
+    }
+
     #region BGM
+
+    public BgmChannel CreateBgmChannel()
+    {
+        var channel = new BgmChannel(this);
+        bgmChannels.Add(channel);
+        return channel;
+    }
+
+    internal void ReleaseBgmChannel(BgmChannel channel)
+        => bgmChannels.Remove(channel);
 
     public bool PlayBgm(MusicResource resource, float volume = 1f, bool loop = true)
     {
@@ -171,7 +213,7 @@ public sealed unsafe class AudioDevice : IDisposable
         if (seVoiceInitialized[i])
             ma.sound_uninit(seVoices[i]);
 
-        var result = ma.sound_init_from_data_source(engine, resource.DataSourcePtr, 0, bgmGroup, bgmSound);
+        var result = ma.sound_init_from_data_source(engine, resource.DataSourcePtr, 0, seGroup, seVoices[i]);
         if (result != ma_result.MA_SUCCESS)
         {
             seVoiceInitialized[i] = false;
@@ -183,6 +225,15 @@ public sealed unsafe class AudioDevice : IDisposable
         ma.sound_set_volume(seVoices[i], Math.Clamp(volume, 0f, 1f));
         ma.sound_start(seVoices[i]);
         return true;
+    }
+
+    public void SetSeTrackVolume(float volume)
+    {
+        for (int i = 0; i < SeVoiceCount; i++)
+        {
+            if (seVoiceInitialized[i])
+                ma.sound_set_volume(seVoices[i], Math.Clamp(volume, 0f, 1f));
+        } 
     }
 
     public float SeChannelVolume

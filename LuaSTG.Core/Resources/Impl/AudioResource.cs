@@ -19,6 +19,13 @@ public abstract unsafe class AudioResource : IResource, IDisposable
     private ma_resource_manager_data_source* rmDataSource;
     private bool registered;
 
+    private int refCount;
+    private bool pendingUnload;
+
+    public bool IsPlaying => refCount > 0;
+
+    internal void AddRef() => refCount++;
+
     protected AudioResource(string name, string path, byte[] data)
     {
         Name = name;
@@ -146,6 +153,23 @@ public abstract unsafe class AudioResource : IResource, IDisposable
     internal void* DataSourcePtr => rmDataSource;
     internal sbyte* VirtualNamePtr => (sbyte*)virtualNameAnsi;
     internal bool IsRegistered => registered;
+
+    internal void Release()
+    {
+        if (refCount > 0)
+            refCount--;
+
+        if (refCount == 0 && pendingUnload)
+            Dispose();
+    }
+
+    public void RequestUnload()
+    {
+        if (refCount > 0)
+            pendingUnload = true;
+        else
+            Dispose();
+    }
 
     public void Dispose()
     {

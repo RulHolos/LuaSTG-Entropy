@@ -1,4 +1,5 @@
 ﻿using LuaSTG.Core.Configuration;
+using LuaSTG.Core.Debugger;
 using LuaSTG.Core.Rendering;
 using Silk.NET.Windowing;
 
@@ -43,7 +44,10 @@ public sealed class WindowDevice : IDisposable
 
         AudioDevice = new();
         InputDevice = new(Window);
-        RenderEngine = new(this);
+        {
+            RenderEngine = new(this);
+            RenderEngine.Initialize();
+        }
 
         Window.Closing += Dispose;
 
@@ -66,5 +70,20 @@ public sealed class WindowDevice : IDisposable
     public void RequestExit()
     {
         RenderEngine?.RequestExit = true;
+    }
+
+    public void SetTitle(string title)
+    {
+        Window.Title = title;
+    }
+
+    public void SetResolution(int width, int height)
+    {
+        Window.Size = new(width, height);
+    }
+
+    public void SetVSync(bool enable)
+    {
+        Window.VSync = enable;
     }
 }

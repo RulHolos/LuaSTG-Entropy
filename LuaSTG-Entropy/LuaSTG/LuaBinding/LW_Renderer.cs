@@ -20,7 +20,7 @@ public unsafe partial class LW_Renderer
         //TODO: Validate render scope
 
         string name = luaL_checkstring(L, 1);
-        ImageResource? img = ResourceManager.Instance.FindSprite(name);
+        ImageResource? img = ResourceManager.Instance.FindResourceInAllPools<ImageResource>(name);
         if (img == null)
             return luaL_error(L, $"can't find sprite '{name}'");
 

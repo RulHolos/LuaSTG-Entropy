@@ -18,6 +18,7 @@ public static class LuaWrapper
 
     public unsafe static void RegisterBuiltInClassWrapper(LuaState L)
     {
+        //Legacy code from Sub/Flux, shouldn't be used anywhere (was hosting StopWatch and some other shit...)
         luaL_Reg[] constructors =
         [
             new(null, null)
@@ -36,9 +37,11 @@ public static class LuaWrapper
         LW_FileManager.Register(L);
         LW_Input.Register(L);
         LW_Archive.Register(L);
+        LW_Window.Register(L);
         lua_settop(L, 0);
 
         //Modern
+        NativeMusicResource.Register(L);
         Vector2.Register(L);
         Vector3.Register(L);
         Well512.Register(L);
