@@ -122,7 +122,7 @@ public sealed class WindowDevice : IDisposable
         return sb.ToString();
     }
 
-    public unsafe int MessageBox(string title, string text, MessageBoxFlags flags)
+    public static unsafe int MessageBox(string title, string text, MessageBoxFlags flags)
     {
         var sdl = Sdl.GetApi();
         //text = WrapMsgBoxText(text, 80);

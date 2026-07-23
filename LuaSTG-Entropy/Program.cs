@@ -47,7 +47,7 @@ public class Program
         ConfigurationLoader config_loader = ConfigurationLoader.Instance;
         if (ConfigurationLoader.Exists(LUASTG_CONFIGURATION_FILE) && !config_loader.LoadFromFile(LUASTG_CONFIGURATION_FILE))
         {
-            //TODO: Show formatted message on messagebox.
+            Core.Window.WindowDevice.MessageBox(LUASTG_INFO, config_loader.GetFormattedMessage(), Silk.NET.SDL.MessageBoxFlags.Error);
             return;
         }
 
@@ -55,13 +55,8 @@ public class Program
 
         using ApplicationSingleInstance singleInstance = new(LUASTG_INFO);
         if (config_loader.Application.SingleInstance)
-        {
             if (!singleInstance.Initialize(config_loader.Application.Uuid!))
-            {
-                //TODO: Error for "another instance is already running."
                 return;
-            }
-        }
 
         // STAGE 3: Start
 
@@ -80,6 +75,16 @@ public class Program
                 Logger.core.Information($"Duration of intialization: {durationAfterInit:F5}s");
 
                 LAPP.Run();
+            }
+            else
+            {
+                Core.Window.WindowDevice.MessageBox(
+                    LUASTG_INFO,
+                    "Engine initialization failed.\n" +
+                    "Check the log file (engine.log) for more information.\n" +
+                    "Please try to restart this application or contact the developers.",
+                    Silk.NET.SDL.MessageBoxFlags.Error
+                );
             }
             LAPP.Shutdown();
             SteamAPI.Shutdown();

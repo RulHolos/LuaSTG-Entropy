@@ -108,14 +108,13 @@ public sealed class GameObject
     public double Omega;
     public long AniTimer { get; private set; }
     public IResource? Res;
-    //public IParticle Ps;
+    //TODO: public IParticle Ps;
 
     public long Timer;
     public long Pause;
 
-    //TODO
     public NativeColor VertexColor;
-    //public BlendMode BlendMode;
+    //TODO: public BlendMode BlendMode;
     public GameObjectFeatures Features;
     public GameObjectStatus Status;
 

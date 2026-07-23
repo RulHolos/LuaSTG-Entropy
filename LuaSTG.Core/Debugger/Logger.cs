@@ -111,7 +111,6 @@ public static class Logger
 
         if (logcfg.RollingFile.Enable)
         {
-            //TODO: Rolling file
             string secondPath = string.IsNullOrEmpty(logcfg.RollingFile.Path) ? "logs/" : logcfg.RollingFile.Path;
             string pathToLog = Path.Combine(Directory.GetCurrentDirectory(), secondPath, string.IsNullOrEmpty(logcfg.RollingFile.Path)
                 ? "engine.log"

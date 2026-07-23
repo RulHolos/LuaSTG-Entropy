@@ -77,7 +77,7 @@ public partial class AppFrame
         if (luaL_loadbuffer(L, source, len, desc) != 0)
         {
             Logger.luajit.Error($"Error while compiling '{desc}': {lua_tostring(L, -1)}");
-            WindowDevice.MessageBox(LUASTG_INFO, $"Error while compiling '{desc}': {lua_tostring(L, -1)}", Silk.NET.SDL.MessageBoxFlags.Error);
+            Core.Window.WindowDevice.MessageBox(LUASTG_INFO, $"Error while compiling '{desc}': {lua_tostring(L, -1)}", Silk.NET.SDL.MessageBoxFlags.Error);
 
             lua_pop(L, 2);
             return false;
@@ -87,7 +87,7 @@ public partial class AppFrame
             string? errmsg = lua_tostring(L, -1);
             errmsg ??= "(error object is a nil value)";
             Logger.luajit.Error($"Error while compiling '{desc}': {errmsg}");
-            WindowDevice.MessageBox(LUASTG_INFO, $"Error while compiling '{desc}': {errmsg}", Silk.NET.SDL.MessageBoxFlags.Error);
+            Core.Window.WindowDevice.MessageBox(LUASTG_INFO, $"Error while compiling '{desc}': {errmsg}", Silk.NET.SDL.MessageBoxFlags.Error);
 
             lua_pop(L, 2);
             return false;
@@ -119,7 +119,7 @@ public partial class AppFrame
                 string? errmsg = lua_tostring(L, -1);
                 errmsg ??= "(error object is a nil value)";
                 Logger.luajit.Error($"Error calling global function '{name}': {errmsg}");
-                WindowDevice.MessageBox(LUASTG_INFO, $"Error calling global function '{name}': {errmsg}", Silk.NET.SDL.MessageBoxFlags.Error);
+                Core.Window.WindowDevice.MessageBox(LUASTG_INFO, $"Error calling global function '{name}': {errmsg}", Silk.NET.SDL.MessageBoxFlags.Error);
             }
             catch (Exception ex)
             {
