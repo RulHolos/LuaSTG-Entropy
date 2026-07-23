@@ -1,7 +1,9 @@
 ﻿using LuaSTG.Core.Configuration;
 using LuaSTG.Core.Debugger;
 using LuaSTG.Core.Rendering;
+using Silk.NET.SDL;
 using Silk.NET.Windowing;
+using System.Text;
 
 namespace LuaSTG.Core.Window;
 
@@ -88,5 +90,44 @@ public sealed class WindowDevice : IDisposable
     public void SetSplash(bool enable)
     {
         InputDevice.ShowCursor(enable);
+    }
+
+    private static string WrapMsgBoxText(string text, int maxChars)
+    {
+        if (string.IsNullOrEmpty(text))
+            return text;
+
+        var words = text.Split(' ');
+        var sb = new StringBuilder();
+        int currentLineLength = 0;
+
+        foreach (var word in words)
+        {
+            if (currentLineLength + word.Length + 1 > maxChars)
+            {
+                sb.AppendLine();
+                currentLineLength = 0;
+            }
+
+            if (currentLineLength > 0)
+            {
+                sb.Append(' ');
+                currentLineLength++;
+            }
+
+            sb.Append(word);
+            currentLineLength += word.Length;
+        }
+
+        return sb.ToString();
+    }
+
+    public unsafe int MessageBox(string title, string text, MessageBoxFlags flags)
+    {
+        var sdl = Sdl.GetApi();
+        //text = WrapMsgBoxText(text, 80);
+
+        int result = sdl.ShowSimpleMessageBox((uint)flags, title, text, null);
+        return result;
     }
 }
