@@ -49,8 +49,6 @@ public sealed class WindowDevice : IDisposable
             RenderEngine.Initialize();
         }
 
-        Window.Closing += Dispose;
-
         return true;
     }
 
@@ -85,5 +83,10 @@ public sealed class WindowDevice : IDisposable
     public void SetVSync(bool enable)
     {
         Window.VSync = enable;
+    }
+
+    public void SetSplash(bool enable)
+    {
+        InputDevice.ShowCursor(enable);
     }
 }

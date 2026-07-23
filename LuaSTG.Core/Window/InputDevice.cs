@@ -70,4 +70,9 @@ public sealed class InputDevice
 
         return mouse.ScrollWheels[0].Y;
     }
+
+    public void ShowCursor(bool enable)
+    {
+        mouse.Cursor.CursorMode = enable ? CursorMode.Normal : CursorMode.Hidden;
+    }
 }

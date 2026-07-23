@@ -43,6 +43,14 @@ public unsafe partial class LW_Window : ILuaBinding
         return 0;
     }
 
+    [LuaBind]
+    public static int SetSplash(LuaState L)
+    {
+        bool enable = lua_toboolean(L, 1);
+        Program.LAPP.WindowDevice.SetSplash(enable);
+        return 0;
+    }
+
     #endregion
 
     private static readonly luaL_Reg[] tFunctions =
@@ -50,8 +58,9 @@ public unsafe partial class LW_Window : ILuaBinding
         new("SetTitle", CFunctions.SetTitle),
         new("SetResolution", CFunctions.SetResolution),
         new("SetVSync", CFunctions.SetVSync),
+        new("SetSplash", CFunctions.SetSplash),
 
-        new(null, null),
+        new(),
     ];
 
     public static void Register(LuaState L)

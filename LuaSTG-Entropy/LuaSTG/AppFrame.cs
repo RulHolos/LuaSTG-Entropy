@@ -59,12 +59,14 @@ public partial class AppFrame
             }
         }
 
+        //Creating window here since it should be accessible for some lua bindings for the launch script
+        WindowDevice = new();
+        WindowDevice.Initialize();
+
         //////////////////////////////////////// Allocate space for object pools
 
         Logger.luastg.Information($"Initializing object pool with capacity: {GameObjectPool.Capacity}");
         ObjectPool = new();
-
-        //////////////////////////////////////// Initialize async resource loader
 
         //////////////////////////////////////// Initialize Lua
 
@@ -81,9 +83,7 @@ public partial class AppFrame
 
         //////////////////////////////////////// Initialize Engine
 
-        //TODO: Create window, audio engine, input, ...
-        WindowDevice = new();
-        WindowDevice.Initialize();
+        //Window created before.
 
         SetupWindowEvents();
 
