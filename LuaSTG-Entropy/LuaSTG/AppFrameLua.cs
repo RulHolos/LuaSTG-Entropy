@@ -201,6 +201,27 @@ public partial class AppFrame
 
             LuaWrapper.RegisterBuiltInClassWrapper(L);
 
+            Logger.luajit.Information($"Getting command line arguments");
+
+            var args = CommandLineArguments.GetArguments();
+            //Arg 1 : dll of the exe
+            //Arg 2 : Nil or lua code
+            if (args.Any())
+            {
+                lua_getglobal(L, "lstg"); // ? t
+                lua_createtable(L, args.Count, 0); // ? t t
+                int idx = 0;
+                foreach (var arg in args)
+                {
+                    Logger.luajit.Information($"[{idx}] {arg}");
+                    lua_pushstring(L, arg); // ? t t s
+                    lua_rawseti(L, -2, idx + 1); // ? t t
+                    idx++;
+                }
+                lua_setfield(L, -2, "args"); // ? t
+                lua_pop(L, 1); // ?
+            }
+
             string boost_script = """
                 -- LuaSTG Sub boost script
                 package.cpath = ""
