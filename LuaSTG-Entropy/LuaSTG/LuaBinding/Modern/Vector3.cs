@@ -286,9 +286,16 @@ public unsafe partial class Vector3 : ILuaBinding
     public static int angle(LuaState L)
     {
         NativeVector3* self = As(L, 1);
-        //TODO: Fix math here
-        lua_pushnumber(L, MathF.Atan2(self->Y, self->X));
-        return 1;
+
+        float horizontalLength = MathF.Sqrt(self->X * self->X + self->Y * self->Y);
+
+        float yaw = MathF.Atan2(self->Y, self->X);
+        float pitch = MathF.Atan2(self->Z, horizontalLength);
+
+        lua_pushnumber(L, yaw);
+        lua_pushnumber(L, pitch);
+
+        return 2;
     }
 
     [LuaBind]
