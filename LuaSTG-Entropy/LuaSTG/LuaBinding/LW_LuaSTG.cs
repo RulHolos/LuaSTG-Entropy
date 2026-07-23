@@ -4,6 +4,7 @@ using LuaSTG.Core.Debugger;
 using LuaSTG.Core.Rendering;
 using System;
 using System.Collections.Generic;
+using System.Net.NetworkInformation;
 using System.Text;
 
 namespace LuaSTG.LuaSTG.LuaBinding;
@@ -20,6 +21,12 @@ public unsafe partial class LW_LuaSTG : ILuaBinding
     [LuaBind]
     public static int SetEntryScript(LuaState L)
     {
+        if (Program.LAPP.Status != AppStatus.Initializing)
+        {
+            Logger.luastg.Warning($"lstg.SetEntryScript() was called outside of the engine initialization step. This call will result in a no-op");
+            return 0;
+        }
+
         Program.LAPP.EntryScriptOverride = luaL_checkstring(L, 1);
         return 0;
     }
