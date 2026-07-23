@@ -30,6 +30,8 @@ public partial class AppFrame
 
     public GameObjectPool? ObjectPool;
 
+    public string? EntryScriptOverride { get; set; } = null;
+
     public WindowDevice WindowDevice { get; private set; }
 
     public bool Init()

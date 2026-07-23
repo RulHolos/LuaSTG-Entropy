@@ -274,23 +274,38 @@ public partial class AppFrame
 
     public bool OnLoadMainScriptAndFiles()
     {
-        Logger.luastg.Information("Loading entry point candidates");
-        //Added src/core.lua compared to Flux. Just felt like it.
-        List<string> candidates = ["core.lua", "main.lua", "src/main.lua", "src/core.lua"];
         string? entry_script = null;
-        foreach (string candidate in candidates)
+        List<string> candidates = ["core.lua", "main.lua", "src/main.lua", "src/core.lua"];
+        if (string.IsNullOrEmpty(Program.LAPP.EntryScriptOverride))
         {
-            if (FileSystemManager.HasFile(candidate))
+            Logger.luastg.Information("Loading entry point candidates");
+            //Added src/core.lua compared to Flux. Just felt like it.
+            foreach (string candidate in candidates)
             {
-                entry_script = candidate;
-                break;
+                if (FileSystemManager.HasFile(candidate))
+                {
+                    entry_script = candidate;
+                    break;
+                }
             }
         }
+        else
+        {
+            Logger.luastg.Information("Loading entry point script using overriden path");
+            entry_script = Program.LAPP.EntryScriptOverride;
+            if (!FileSystemManager.HasFile(entry_script))
+            {
+                Logger.luajit.Error($"Entry point script path '{entry_script}' doesn't exist");
+                entry_script = null;
+            }
+        }
+
         if (string.IsNullOrEmpty(entry_script))
         {
-            Logger.luastg.Error($"Cannot find any entry point candidates at: {string.Join(", ", candidates)}");
-            return true;
+            Logger.luastg.Error($"Cannot find any entry point candidates at: {string.Join(", ", candidates)} ; or entry script override doesn't exist");
+            return false;
         }
+
         if (FileSystemManager.ReadFile(entry_script, out byte[]? data))
         {
             Logger.luastg.Information($"Loading script '{entry_script}'");

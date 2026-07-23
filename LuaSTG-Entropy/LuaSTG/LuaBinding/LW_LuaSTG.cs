@@ -12,6 +12,18 @@ public unsafe partial class LW_LuaSTG : ILuaBinding
 {
     #region Functions
 
+    /// <summary>
+    /// If set, will override the default candidates for the entry script (not the launch script, the actual entry point)
+    /// </summary>
+    /// <param name="L"></param>
+    /// <returns></returns>
+    [LuaBind]
+    public static int SetEntryScript(LuaState L)
+    {
+        Program.LAPP.EntryScriptOverride = luaL_checkstring(L, 1);
+        return 0;
+    }
+
     [LuaBind]
     public static int GetVersionNumber(LuaState L)
     {
@@ -85,6 +97,8 @@ public unsafe partial class LW_LuaSTG : ILuaBinding
 
     private static readonly luaL_Reg[] tFunctions =
     [
+        new("SetEntryScript", CFunctions.SetEntryScript),
+
         new("GetVersionNumber", CFunctions.GetVersionNumber),
         new("GetVersionName", CFunctions.GetVersionName),
         new("GetBranchName", CFunctions.GetBranchName),

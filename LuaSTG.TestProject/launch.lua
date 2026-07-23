@@ -30,6 +30,8 @@ elseif lstg.FileManager.FileExist(dir_root_script) then
 	lstg.FileManager.AddSearchPath(dir_path)
 end
 
+lstg.SetEntryScript("core.lua")
+
 lstg.Window.SetSplash(true)
 lstg.Window.SetTitle("Entropy test library")
 lstg.Audio.SetMasterVolume(50 / 100)
