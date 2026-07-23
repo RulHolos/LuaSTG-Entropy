@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Text;
+using LuaSTG.Core.Debugger;
 
 namespace LuaSTG.Core.FileSystem;
 
@@ -8,12 +9,9 @@ public class FileSystemOS : IFileSystem
 {
     public static FileSystemOS Instance { get; } = new();
 
-    static FileSystemOS()
-    {
-        FileSystemOS.Instance = Instance;
-    }
-
     private FileSystemOS() { }
+
+    private static string Normalize(string path) => path.Replace('\\', '/');
 
     public bool HasNode(string path) => HasFile(path) || HasDirectory(path);
 
@@ -46,8 +44,7 @@ public class FileSystemOS : IFileSystem
     {
         if (!VerifyFilePathCase(path, out string correctCasePath))
         {
-            //TODO: Transfer Logger to Core instead of Entropy
-            Console.WriteLine($"Error: Case difference in file paths. Provided: '{path}', Expected: '{correctCasePath}'");
+            Logger.core.Error($"Case difference in file paths. Provided: '{path}', Expected: '{correctCasePath}'");
             data = null;
             return false;
         }
@@ -98,28 +95,57 @@ public class FileSystemOS : IFileSystem
 
     private static bool VerifyFilePathCase(string path, out string correctCasePath)
     {
-        correctCasePath = path;
-        if (!File.Exists(path) && !Directory.Exists(path))
+        bool found = ResolveActualPath(path, out correctCasePath);
+        if (!found)
+        {
+            correctCasePath = path;
             return false;
+        }
+
+        return string.Equals(path, correctCasePath, StringComparison.Ordinal);
+    }
+
+    private static bool ResolveActualPath(string path, out string actualPath)
+    {
+        actualPath = path;
+        string norm = Normalize(path);
+
+        if (File.Exists(norm) || Directory.Exists(norm))
+        {
+            actualPath = norm;
+            return true;
+        }
 
         try
         {
-            var fullPath = Path.GetFullPath(path);
-            var current = new DirectoryInfo(fullPath);
+            string fullPath = Path.GetFullPath(norm);
+            string root = Path.GetPathRoot(fullPath) ?? "/";
+            string relative = fullPath[root.Length..];
+            
+            string[] segments = relative.Split('/', StringSplitOptions.RemoveEmptyEntries);
+            string current = root;
 
-            while (current.Parent != null)
+            var enumOptions = new EnumerationOptions
             {
-                var match = current.Parent.GetFileSystemInfos(current.Name).FirstOrDefault();
-                if (match == null || match.Name != current.Name)
-                {
-                    correctCasePath = match != null
-                        ? Path.Combine(current.Parent.FullName, match.Name).Replace('\\', '/')
-                        : fullPath.Replace('\\', '/');
+                MatchCasing = MatchCasing.CaseInsensitive,
+                RecurseSubdirectories = false
+            };
+
+            foreach (var segment in segments)
+            {
+                var dirInfo = new DirectoryInfo(current);
+                if (!dirInfo.Exists)
                     return false;
-                }
-                current = current.Parent;
+
+                var match = dirInfo.GetFileSystemInfos(segment, enumOptions).FirstOrDefault();
+                if (match == null)
+                    return false;
+
+                current = match.FullName;
             }
-            return true;
+
+            actualPath = Normalize(current);
+            return File.Exists(actualPath) || Directory.Exists(actualPath);
         }
         catch
         {

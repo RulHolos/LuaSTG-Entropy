@@ -63,7 +63,7 @@ public static class FileSystemManager
         if (schema == ResourceSchema.Resource && isAbsoluteSchema)
         {
             int delimiterIdx = span.IndexOfAny('/', '\\');
-            if (delimiterIdx != 1)
+            if (delimiterIdx > 0)
             {
                 fileSystem = span[..delimiterIdx].ToString();
                 path = span[(delimiterIdx + 1)..].ToString();
@@ -73,7 +73,12 @@ public static class FileSystemManager
         return new ResourceLocation(schema, fileSystem, path);
     }
 
-    private static string NormalizeAndCombine(string baseDir, string subPath) => Path.Combine(baseDir, subPath).Replace('\\', '/');
+    private static string NormalizeAndCombine(string baseDir, string subPath)
+    {
+        baseDir = baseDir.Replace('\\', '/');
+        subPath = subPath.Replace('\\', '/');
+        return Path.Combine(baseDir, subPath).Replace('\\', '/');
+    }
 
     private static ResolvedLocation Resolve(ResourceLocation location)
     {
@@ -243,15 +248,24 @@ public static class FileSystemManager
     }
 
     public static bool WriteFile(string name, ReadOnlySpan<byte> data)
+{
+    try
     {
-        try
+        var res = Resolve(ParseLocation(name));
+        string targetPath = res.FileSystem != null ? res.Path : name.Replace('\\', '/');
+
+        string? dir = Path.GetDirectoryName(targetPath);
+        if (!string.IsNullOrEmpty(dir) && !Directory.Exists(dir))
         {
-            File.WriteAllBytes(name, data.ToArray());
-            return true;
+            Directory.CreateDirectory(dir);
         }
-        catch
-        {
-            return false;
-        }
+
+        File.WriteAllBytes(targetPath, data.ToArray());
+        return true;
     }
+    catch
+    {
+        return false;
+    }
+}
 }
