@@ -4,6 +4,7 @@ using LuaSTG.Core.Rendering;
 using Silk.NET.Core;
 using Silk.NET.SDL;
 using Silk.NET.Windowing;
+using StbImageSharp;
 using System.Reflection;
 using System.Text;
 
@@ -53,7 +54,7 @@ public sealed class WindowDevice : IDisposable
             RenderEngine.Initialize();
         }
 
-        //SetIcon();
+        SetIcon();
 
         return true;
     }
@@ -76,7 +77,7 @@ public sealed class WindowDevice : IDisposable
         var assembly = Assembly.GetExecutingAssembly();
         foreach (var i in assembly.GetManifestResourceNames())
             Console.WriteLine(i);
-        var file = assembly.GetManifestResourceNames().FirstOrDefault(x => x == "LuaSTG.Core.app.ico");
+        var file = assembly.GetManifestResourceNames().FirstOrDefault(x => x == "LuaSTG.Core.app.png");
 
         using var stream = assembly.GetManifestResourceStream(file);
         if (stream == null)
@@ -85,11 +86,10 @@ public sealed class WindowDevice : IDisposable
             return;
         }
 
-        byte[] rawBytes = new byte[stream.Length];
-        stream.ReadExactly(rawBytes, 0, rawBytes.Length);
+        ImageResult image = ImageResult.FromStream(stream, ColorComponents.RedGreenBlueAlpha);
 
         //TODO: Size mismatch fix.
-        RawImage icon = new(128, 128, rawBytes);
+        RawImage icon = new(image.Width, image.Height, image.Data);
         ReadOnlySpan<RawImage> icons = [icon];
         Window.SetWindowIcon(icons);
     }
