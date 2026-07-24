@@ -14,8 +14,6 @@ function GameInit()
 	music:Play()
 	music2:Play()
 	]]
-
-	lstg.fgjdsmfg()
 end
 
 function FrameFunc()

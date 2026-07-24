@@ -11,11 +11,11 @@ lstg.FileManager.AddSearchPath("data")
 for _,v in ipairs({"core","data","background","se","music","font"}) do
 	local path = v .. ".zip"
 	if lstg.FileManager.FileExist(path) then
-		lstg.LoadPack(path)
+		lstg.FileManager.LoadArchive(path)
 	else
 		path = "Library/" .. path
 		if lstg.FileManager.FileExist(path) then
-			lstg.LoadPack(path)
+			lstg.FileManager.LoadArchive(path)
 		end
 	end
 end
@@ -25,7 +25,7 @@ local zip_path = string.format("mod/%s.zip", setting.mod)
 local dir_path = string.format("mod/%s/", setting.mod)
 local dir_root_script = string.format("mod/%s/root.lua", setting.mod)
 if lstg.FileManager.FileExist(zip_path) then
-	lstg.LoadPack(zip_path)
+	lstg.FileManager.LoadArchive(zip_path)
 elseif lstg.FileManager.FileExist(dir_root_script) then
 	lstg.FileManager.AddSearchPath(dir_path)
 end
