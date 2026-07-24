@@ -1,8 +1,10 @@
 ﻿using LuaSTG.Core.Configuration;
 using LuaSTG.Core.Debugger;
 using LuaSTG.Core.Rendering;
+using Silk.NET.Core;
 using Silk.NET.SDL;
 using Silk.NET.Windowing;
+using System.Reflection;
 using System.Text;
 
 namespace LuaSTG.Core.Window;
@@ -51,6 +53,8 @@ public sealed class WindowDevice : IDisposable
             RenderEngine.Initialize();
         }
 
+        //SetIcon();
+
         return true;
     }
 
@@ -65,6 +69,29 @@ public sealed class WindowDevice : IDisposable
         //InputDevice?.Dispose();
         RenderEngine?.Dispose();
         Window?.Dispose();
+    }
+
+    public void SetIcon()
+    {
+        var assembly = Assembly.GetExecutingAssembly();
+        foreach (var i in assembly.GetManifestResourceNames())
+            Console.WriteLine(i);
+        var file = assembly.GetManifestResourceNames().FirstOrDefault(x => x == "LuaSTG.Core.app.ico");
+
+        using var stream = assembly.GetManifestResourceStream(file);
+        if (stream == null)
+        {
+            Logger.core.Error("Icon 'LuaSTG.Core.app.ico' not found in embedded resources.");
+            return;
+        }
+
+        byte[] rawBytes = new byte[stream.Length];
+        stream.ReadExactly(rawBytes, 0, rawBytes.Length);
+
+        //TODO: Size mismatch fix.
+        RawImage icon = new(128, 128, rawBytes);
+        ReadOnlySpan<RawImage> icons = [icon];
+        Window.SetWindowIcon(icons);
     }
 
     public void RequestExit()

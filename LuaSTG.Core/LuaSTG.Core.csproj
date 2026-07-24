@@ -20,10 +20,12 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <None Remove="app.ico" />
     <None Remove="FileSystem\LuaScripts\main.lua" />
   </ItemGroup>
 
   <ItemGroup>
+    <EmbeddedResource Include="app.ico" />
     <EmbeddedResource Include="FileSystem\LuaScripts\io.lua" />
     <EmbeddedResource Include="FileSystem\LuaScripts\math.lua" />
     <EmbeddedResource Include="FileSystem\LuaScripts\main.lua" />
