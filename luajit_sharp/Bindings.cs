@@ -2,6 +2,7 @@
 using unsafe lua_Reader = delegate* unmanaged[Cdecl]<luajit_sharp.LuaState, void*, nuint*, byte*>;
 using unsafe lua_Writer = delegate* unmanaged[Cdecl]<luajit_sharp.LuaState, void*, nuint, void*, int>;
 using unsafe lua_Alloc = delegate* unmanaged[Cdecl]<void*, void*, nuint, nuint, void*>;
+using unsafe lua_Hook = delegate* unmanaged[Cdecl]<luajit_sharp.LuaState, luajit_sharp.lua_Debug*, void>;
 
 using System.Runtime.InteropServices;
 using System.Text;
@@ -269,7 +270,14 @@ public unsafe static partial class LuaNative
     [LibraryImport(Lib)]
     public static partial int lua_pcall(LuaState L, int nargs, int nresults, int errfunc);
 
-    //TODO: lua_cpcall, lua_load and lua_dump
+    [LibraryImport(Lib)]
+    public static partial int lua_cpcall(LuaState L, lua_CFunction func, void* ud);
+
+    [LibraryImport(Lib, StringMarshalling = StringMarshalling.Utf8)]
+    public static partial int lua_load(LuaState L, lua_Reader reader, void* dt, string chunkname);
+
+    [LibraryImport(Lib)]
+    public static partial int lua_dump(LuaState L, lua_Writer writer, void* data);
     #endregion
     #region coroutine functions
     [LibraryImport(Lib)]
@@ -306,11 +314,22 @@ public unsafe static partial class LuaNative
     [LibraryImport(Lib)]
     public static partial void lua_concat(LuaState L, int n);
 
+    [LibraryImport(Lib)]
+    public static partial lua_Alloc lua_getallocf(LuaState L, void** ud);
+
+    [LibraryImport(Lib)]
+    public static partial void lua_setallocf(LuaState L, lua_Alloc f, void* ud);
+
     //TODO: lua_getallocf and lua_setallocf
     #endregion
     #region Some useful macros
     public static void lua_pop(LuaState L, int n) => lua_settop(L, -(n) - 1);
     public static void lua_newtable(LuaState L) => lua_createtable(L, 0, 0);
+    public static void lua_register(LuaState L, string n, lua_CFunction f)
+    {
+        lua_pushcfunction(L, f);
+        lua_setglobal(L, n);
+    }
     public static void lua_pushcfunction(LuaState L, lua_CFunction f) => lua_pushcclosure(L, f, 0);
     public static nuint lua_strlen(LuaState L, int i) => lua_objlen(L, (i));
 
@@ -325,8 +344,14 @@ public unsafe static partial class LuaNative
 
     public static void lua_setglobal(LuaState L, string s) => lua_setfield(L, LUA_GLOBALSINDEX, s);
     public static void lua_getglobal(LuaState L, string s) => lua_getfield(L, LUA_GLOBALSINDEX, s);
+    #endregion
+    #region Compatibility macros and functions
+    public static LuaState lua_open() => luaL_newstate();
+    public static void lua_getregistry(LuaState L) => lua_pushvalue(L, LUA_REGISTRYINDEX);
+    public static void lua_getgccount(LuaState L) => lua_gc(L, LUA_GCCOUNT, 0);
 
-    //TODO: lua_register, lua_pushcfunction
+    [LibraryImport(Lib)]
+    public static partial void lua_setlevel(LuaState from, LuaState to);
     #endregion
     #region Debug API
     public const int LUA_HOOKCALL = 0;
@@ -340,7 +365,60 @@ public unsafe static partial class LuaNative
     public const int LUA_MASKLINE = 1 << LUA_HOOKLINE;
     public const int LUA_MASKCOUNT = 1 << LUA_HOOKCOUNT;
 
-    //TODO
+    [LibraryImport(Lib)]
+    public static partial int lua_getstack(LuaState L, int level, lua_Debug* ar);
+
+    [LibraryImport(Lib, StringMarshalling = StringMarshalling.Utf8)]
+    public static partial int lua_getinfo(LuaState L, string what, lua_Debug* ar);
+
+    [LibraryImport(Lib)]
+    public static partial IntPtr lua_getlocal(LuaState L, lua_Debug* ar, int n);
+
+    [LibraryImport(Lib)]
+    public static partial IntPtr lua_setlocal(LuaState L, lua_Debug* ar, int n);
+
+    [LibraryImport(Lib)]
+    public static partial IntPtr lua_getupvalue(LuaState L, int funcindex, int n);
+
+    [LibraryImport(Lib)]
+    public static partial IntPtr lua_setupvalue(LuaState L, int funcindex, int n);
+
+    [LibraryImport(Lib)]
+    public static partial int lua_sethook(LuaState L, lua_Hook func, int mask, int count);
+
+    [LibraryImport(Lib)]
+    public static partial lua_Hook lua_gethook(LuaState L);
+
+    [LibraryImport(Lib)]
+    public static partial int lua_gethookmask(LuaState L);
+
+    [LibraryImport(Lib)]
+    public static partial int lua_gethookcount(LuaState L);
+
+    [LibraryImport(Lib)]
+    public static partial IntPtr lua_upvalueid(LuaState L, int idx, int n);
+
+    [LibraryImport(Lib)]
+    public static partial void lua_upvaluejoin(LuaState L, int idx1, int n1, int idx2, int n2);
+
+    [LibraryImport(Lib, StringMarshalling = StringMarshalling.Utf8)]
+    public static partial int lua_loadx(LuaState L, IntPtr reader, IntPtr dt, string chunkname, string? mode);
+
+    [LibraryImport(Lib)]
+    public static partial double* lua_version(LuaState L);
+
+    [LibraryImport(Lib)]
+    public static partial void lua_copy(LuaState L, int fromidx, int toidx);
+
+    [LibraryImport(Lib)]
+    public static partial double lua_tonumberx(LuaState L, int idx, [MarshalAs(UnmanagedType.Bool)] out bool isnum);
+
+    [LibraryImport(Lib)]
+    public static partial nint lua_tointegerx(LuaState L, int idx, [MarshalAs(UnmanagedType.Bool)] out bool isnum);
+
+    [LibraryImport(Lib)]
+    [return: MarshalAs(UnmanagedType.Bool)]
+    public static partial bool lua_isyieldable(LuaState L);
     #endregion
 
     #region lualib.h
