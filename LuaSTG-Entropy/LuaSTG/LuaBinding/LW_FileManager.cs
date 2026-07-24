@@ -567,7 +567,6 @@ public unsafe partial class LW_FileManager : ILuaBinding
 
     private static readonly luaL_Reg[] compat_lib =
     [
-        new("LoadPack", CFunctions.LoadArchive),
         new("LoadPackSub", CFunctions.LoadPackSub),
         new("UnloadPack", CFunctions.UnloadArchive),
         new("ExtractRes", CFunctions.ExtractRes),
